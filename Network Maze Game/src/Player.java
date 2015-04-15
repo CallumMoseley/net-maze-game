@@ -22,6 +22,16 @@ public class Player
 		this.y = y;
 	}
 	
+	public int getX()
+	{
+		return x;
+	}
+	
+	public int getY()
+	{
+		return y;
+	}
+	
 	public void draw(Graphics g)
 	{
 		g.setColor(Color.BLACK);
@@ -56,5 +66,11 @@ public class Player
 		
 		x += dx;
 		y += dy;
+	}
+
+	public void updatePos(int x2, int y2)
+	{
+		x = x2;
+		y = y2;
 	}
 }

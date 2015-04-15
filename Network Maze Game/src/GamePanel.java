@@ -3,6 +3,11 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -10,6 +15,10 @@ public class GamePanel extends JPanel implements KeyListener
 {
 	private Player player;
 	private int keys;
+	private Socket server;
+	private InputStream is;
+	private OutputStream os;
+	private ArrayList<Player> players;
 	
 	public GamePanel()
 	{
@@ -28,7 +37,20 @@ public class GamePanel extends JPanel implements KeyListener
 			}
 		};
 		
+		try
+		{
+			server = new Socket("localhost", 54565);
+			is = server.getInputStream();
+			os = server.getOutputStream();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
 		loop.start();
+		ListenToServer l = new ListenToServer();
+		l.start();
 	}
 
 	private void gameLoop()
@@ -36,6 +58,15 @@ public class GamePanel extends JPanel implements KeyListener
 		while (true)
 		{
 			player.handleInput(keys);
+			try
+			{
+				os.write(2);
+				os.write(keys);
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 			repaint();
 			try
 			{
@@ -45,6 +76,50 @@ public class GamePanel extends JPanel implements KeyListener
 			{
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	class ListenToServer extends Thread
+	{
+		public void run()
+		{
+			while (!server.isClosed())
+			{
+				try
+				{
+					int type = is.read();
+					switch (type)
+					{
+					case 3:
+						int np = is.read();
+						for (int i = 0; i < np; i++)
+						{
+							int x = (is.read() << 8) | is.read();
+							int y = (is.read() << 8) | is.read();
+							players.get(i).updatePos(x, y);
+						}
+						
+						break;
+					}
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public void disconnect()
+	{
+		try
+		{
+			os.write(1);
+			server.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
 	

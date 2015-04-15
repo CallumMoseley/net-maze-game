@@ -23,29 +23,67 @@ public class Client
 			e.printStackTrace();
 		}
 		p = new Player(0, 0);
+		
+		Thread listen = new Thread()
+		{
+			public void run()
+			{
+				listen();
+			}
+		};
+		
+		listen.start();
 	}
 	
 	public void listen()
 	{
-		while (!sock.isClosed())
+		boolean listening = true;
+		while (listening)
 		{
 			try 
 			{
 				int type = is.read();
 				switch (type)
 				{
+				case 1:
+					listening = false;
+					break;
 				case 2:
 					int keys = is.read();
 					p.handleInput(keys);
 					break;
 				default:
 					System.out.println("Invalid packet recieved.");
+					break;
 				}
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			}
+		}
+
+		this.close();
+	}
+	
+	public void update(GameState g)
+	{
+		try
+		{
+			os.write(3);
+			os.write(g.players.size());
+			for (Player pl : g.players)
+			{
+				os.write(pl.getX() << 8);
+				os.write(pl.getX() & 0xFF);
+				
+				os.write(pl.getY() << 8);
+				os.write(pl.getY() & 0xFF);
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
 		}
 	}
 	

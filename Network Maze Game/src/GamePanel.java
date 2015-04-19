@@ -27,6 +27,7 @@ public class GamePanel extends JPanel implements KeyListener
 		addKeyListener(this);
 		
 		player = new Player(0, 0);
+		players = new ArrayList<Player>();
 		keys = 0;
 		
 		Thread loop = new Thread()
@@ -92,12 +93,27 @@ public class GamePanel extends JPanel implements KeyListener
 					{
 					case 3:
 						int np = is.read();
+						while (players.size() != np)
+						{
+							if (players.size() > np)
+							{
+								players.remove(players.size() - 1);
+							}
+							else
+							{
+								players.add(new Player(0, 0));
+							}
+						}
 						for (int i = 0; i < np; i++)
 						{
 							int x = (is.read() << 8) | is.read();
 							int y = (is.read() << 8) | is.read();
 							players.get(i).updatePos(x, y);
 						}
+						
+						int x = (is.read() << 8) | is.read();
+						int y = (is.read() << 8) | is.read();
+						player.updatePos(x, y);
 						
 						break;
 					}
@@ -128,6 +144,10 @@ public class GamePanel extends JPanel implements KeyListener
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, getWidth(), getHeight());
 		player.draw(g);
+		for (Player p : players)
+		{
+			p.draw(g);
+		}
 	}
 
 	@Override

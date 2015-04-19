@@ -71,15 +71,24 @@ public class Client
 		try
 		{
 			os.write(3);
-			os.write(g.players.size());
+			os.write(g.players.size() - 1);
 			for (Player pl : g.players)
 			{
-				os.write(pl.getX() << 8);
-				os.write(pl.getX() & 0xFF);
-				
-				os.write(pl.getY() << 8);
-				os.write(pl.getY() & 0xFF);
+				if (pl != p)
+				{
+					os.write(pl.getX() >> 8);
+					os.write(pl.getX() & 0xFF);
+					
+					os.write(pl.getY() >> 8);
+					os.write(pl.getY() & 0xFF);
+				}
 			}
+			
+			os.write(p.getX() >> 8);
+			os.write(p.getX() & 0xFF);
+			
+			os.write(p.getY() >> 8);
+			os.write(p.getY() & 0xFF);
 		}
 		catch (Exception e)
 		{
@@ -99,5 +108,10 @@ public class Client
 		{
 			e.printStackTrace();
 		}
+	}
+
+	public Player getPlayer()
+	{
+		return p;
 	}
 }
